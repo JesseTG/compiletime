@@ -1,12 +1,12 @@
 /****
 * Copyright (c) 2013 Jason O'Neil
-* 
+*
 * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-* 
+*
 ****/
 
 import haxe.macro.Context;
@@ -16,7 +16,7 @@ import haxe.Json;
 using StringTools;
 using Lambda;
 
-class CompileTime 
+class CompileTime
 {
     /** Inserts a date object of the date and time that this was compiled */
     macro public static function buildDate() {
@@ -73,7 +73,12 @@ class CompileTime
         return toExpr(0);
     }
 
-    /** Returns an Array of Classes.  By default it will return all classes, but you can also search for classes in a particular package, 
+    /** Reads the contents of a file as a Haxe expression.  Typically for things like loading Map literals from a file. */
+    macro public static function readExpression(path:String) {
+        return Context.parse(loadFileAsString(path), Context.currentPos());
+    }
+
+    /** Returns an Array of Classes.  By default it will return all classes, but you can also search for classes in a particular package,
     classes that extend a particular type, and you can choose whether to look for classes recursively or not. */
     macro public static function getAllClasses(?inPackage:String, ?includeChildPackages:Bool = true, ?extendsBaseClass:ExprOf<Class<Dynamic>>) {
         var p = Context.currentPos();
@@ -93,7 +98,7 @@ class CompileTime
             try {
                 var p = haxe.macro.Context.resolvePath(path);
                 return sys.io.File.getContent(p);
-            } 
+            }
             catch(e:Dynamic) {
                 return haxe.macro.Context.error('Failed to load file $path: $e', Context.currentPos());
             }
@@ -102,7 +107,7 @@ class CompileTime
         static function isSameClass(a:ClassType, b:ClassType):Bool {
             return (
                 a.pack.join(".") == b.pack.join(".")
-                && a.name == b.name 
+                && a.name == b.name
             );
         }
 
@@ -158,14 +163,14 @@ class CompileTime
             var classesFound:Array<String> = [];
             for (type in arr) {
                 switch (type) {
-                    // We only care for Classes 
+                    // We only care for Classes
                     case TInst(t, _):
                         var include = true;
 
                         // Check if it belongs to a certain package or subpackage
                         if (inPackage != null) {
                             if (includeChildPackages) {
-                                if (t.toString().startsWith(inPackage) == false) 
+                                if (t.toString().startsWith(inPackage) == false)
                                     include = false;
                             }
                             else {
@@ -181,8 +186,8 @@ class CompileTime
                                 include = false;
                         }
 
-                        if (include) 
-                            classesFound.push(t.toString()); 
+                        if (include)
+                            classesFound.push(t.toString());
                     default:
                 }
             }
@@ -209,7 +214,7 @@ class CompileTime
             else {
                 classListsMetaArray = [];
             }
-            
+
             // Add the class names to CompileTimeClassList as metadata
             var itemAsArray = macro [$listIDExpr, $classNamesExpr];
             classListsMetaArray.push(itemAsArray);
