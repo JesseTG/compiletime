@@ -1,3 +1,5 @@
+package au.com.jasononeil.compiletime;
+
 /****
 * Copyright (c) 2013 Jason O'Neil
 *
